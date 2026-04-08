@@ -37,12 +37,7 @@ export const envValidationSchema = Joi.object({
   THROTTLE_LIMIT: Joi.number().default(100),
 
   // Redis Cache
-  REDIS_HOST: Joi.string().hostname().default('localhost').messages({
-    'string.hostname': 'REDIS_HOST debe ser un hostname válido.',
-  }),
-  REDIS_PORT: Joi.number().port().default(6379).messages({
-    'number.port': 'REDIS_PORT debe ser un puerto válido (1-65535).',
-  }),
+  REDIS_URL: Joi.string().required(),
   CACHE_TTL_SECONDS: Joi.number().integer().min(1).default(30),
   LEADERBOARD_CACHE_TTL_SECONDS: Joi.number().integer().min(1).default(20),
 });

@@ -46,10 +46,7 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         store: await redisStore({
-          socket: {
-            host: config.get<string>('redis.host'),
-            port: config.get<number>('redis.port'),
-          },
+          url: config.get<string>('redis.url'),
           ttl: (config.get<number>('redis.ttl') as number) * 1000, // cache-manager-redis-yet espera ms
         }),
       }),

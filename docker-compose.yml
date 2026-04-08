@@ -36,9 +36,7 @@ services:
 
   # ── API NestJS ──
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: docker.io/jilzyx/toka-api:latest
     container_name: toka_tribe_api
     restart: unless-stopped
     ports:
@@ -61,6 +59,7 @@ services:
       ALIPAY_MERCHANT_CODE: ${ALIPAY_MERCHANT_CODE:-30100}
       THROTTLE_TTL: ${THROTTLE_TTL:-60000}
       THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      REDIS_URL: redis://redis:${REDIS_PORT:-6379}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
       CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-30}
