@@ -8,7 +8,7 @@ import { PaymentDocument } from '../../infrastructure/persistence/schemas/paymen
 import { UserRepository } from '../../../users/infrastructure/persistence/repositories/user.repository.js';
 import { AppException } from '../../../../shared/application/exceptions/app-exception.js';
 import { ErrorCodes } from '../../../../config/constants/error-codes.js';
-import { PaymentStatus } from '../../../shared/domain/enums/payment-status.enum.js';
+import { PaymentStatus } from '../../../../shared/domain/enums/payment-status.enum.js';
 import { TOKA_PAYMENT_PORT, type TokaPaymentPort } from '../../application/ports/toka-payment.port.js';
 
 @ApiTags('payments')
@@ -114,7 +114,7 @@ export class PaymentsController {
       );
     }
 
-    if (payment.status === PaymentStatus.COMPLETED) {
+    if (payment.status === (PaymentStatus.COMPLETED as string)) {
       return { status: payment.status };
     }
 
