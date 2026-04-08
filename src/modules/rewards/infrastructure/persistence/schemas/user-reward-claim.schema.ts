@@ -14,5 +14,7 @@ export class UserRewardClaimDocument extends Document {
 }
 
 export const UserRewardClaimSchema = SchemaFactory.createForClass(UserRewardClaimDocument);
-// CRÍTICO: Previene reclamos duplicados de la misma recompensa en la misma temporada
+// CRÍTICO: Previene reclamos duplicados de la misma recompensa en la misma temporada (idempotencia)
 UserRewardClaimSchema.index({ userId: 1, rewardId: 1, seasonId: 1 }, { unique: true });
+// Consulta historial de reclamos de un usuario ordenado por fecha
+UserRewardClaimSchema.index({ userId: 1, claimedAt: -1 });

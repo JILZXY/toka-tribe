@@ -29,6 +29,11 @@ export class GameSessionDocument extends Document {
 }
 
 export const GameSessionSchema = SchemaFactory.createForClass(GameSessionDocument);
+// Idempotencia: un usuario solo puede completar un reto una vez
 GameSessionSchema.index({ challengeId: 1, userId: 1 }, { unique: true });
+// Consulta de ranking interno de tribu por reto
 GameSessionSchema.index({ tribeId: 1, challengeId: 1, pointsEarned: -1 });
+// Historial de juegos del usuario paginado
 GameSessionSchema.index({ userId: 1, playedAt: -1 });
+// Índice de cobertura: obtener puntos del usuario por tribu sin acceder al documento
+GameSessionSchema.index({ userId: 1, tribeId: 1, pointsEarned: -1 });

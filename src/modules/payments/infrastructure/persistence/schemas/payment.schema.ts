@@ -29,4 +29,7 @@ export class PaymentDocument extends Document {
 export const PaymentSchema = SchemaFactory.createForClass(PaymentDocument);
 // CRÍTICO: Idempotencia — mismo external payment no se procesa dos veces
 PaymentSchema.index({ externalPaymentId: 1 }, { unique: true });
+// Consulta de pagos por usuario y estado (panel del usuario)
 PaymentSchema.index({ userId: 1, status: 1 });
+// Historial de pagos del usuario paginado por fecha (covered query)
+PaymentSchema.index({ userId: 1, createdAt: -1 });
