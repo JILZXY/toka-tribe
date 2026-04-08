@@ -34,7 +34,7 @@ export class TokaAuthHttpAdapter implements TokaAuthPort {
           'Content-Type': 'application/json',
           'X-App-Id': this.appId,
         },
-        body: JSON.stringify({ authCode }),
+        body: JSON.stringify({ authcode: authCode }),
       });
 
       if (!response.ok) {

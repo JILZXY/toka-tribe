@@ -21,23 +21,25 @@ export class TokaUserInfoHttpAdapter implements TokaUserInfoPort {
     this.appId = this.configService.getOrThrow<string>('toka.appId');
   }
 
-  async getUserInfo(accessToken: string): Promise<TokaUserInfo> {
+  async getUserInfo(accessToken: string, authCodes: string[]): Promise<TokaUserInfo> {
     const url = `${this.baseUrl}/v1/user/info`;
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
           'X-App-Id': this.appId,
         },
+        body: JSON.stringify({ authCodes })
       });
 
       if (!response.ok) {
         this.logger.warn(
           `Toka user/info respondió con status ${response.status}`,
         );
-        return { userId: '' };
+        return {};
       }
 
       const data = (await response.json()) as {
@@ -46,13 +48,13 @@ export class TokaUserInfoHttpAdapter implements TokaUserInfoPort {
       };
 
       if (!data.success || !data.data) {
-        return { userId: '' };
+        return {};
       }
 
       return data.data;
     } catch {
-      this.logger.warn('No se pudo obtener info de usuario de Toka');
-      return { userId: '' };
+      this.logger.warn('Error de red al obtener info de usuario de Toka');
+      return {};
     }
   }
 }

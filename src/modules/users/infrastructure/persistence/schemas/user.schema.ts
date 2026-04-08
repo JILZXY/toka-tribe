@@ -38,6 +38,9 @@ export class UserDocument extends Document {
     enum: Object.values(LeagueMembership),
   })
   leagueMembership: string;
+
+  @Prop()
+  tokaAccessToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);

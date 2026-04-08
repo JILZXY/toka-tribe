@@ -44,7 +44,7 @@ export class UserRepository {
    */
   async upsertByTokaUserId(
     tokaUserId: string,
-    data: Partial<Pick<UserDocument, 'username' | 'avatarUrl'>>,
+    data: Partial<Pick<UserDocument, 'username' | 'avatarUrl' | 'tokaAccessToken'>>,
   ): Promise<UserDocument> {
     const user = await this.userModel
       .findOneAndUpdate(
@@ -54,6 +54,7 @@ export class UserRepository {
           $set: {
             ...(data.username && { username: data.username }),
             ...(data.avatarUrl && { avatarUrl: data.avatarUrl }),
+            ...(data.tokaAccessToken && { tokaAccessToken: data.tokaAccessToken }),
           },
         },
         { upsert: true, new: true, runValidators: true },

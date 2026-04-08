@@ -2,7 +2,7 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TOKA_AUTH_PORT, type TokaAuthPort } from '../ports/toka-auth.port.js';
-import { TOKA_USER_INFO_PORT, type TokaUserInfoPort, type TokaUserInfo } from '../ports/toka-user-info.port.js';
+import { UserRepository } from '../../../users/infrastructure/persistence/repositories/user.repository.js';
 import { AppException } from '../../../../shared/application/exceptions/app-exception.js';
 import { ErrorCodes } from '../../../../config/constants/error-codes.js';
 
@@ -29,8 +29,7 @@ export class LoginWithTokaUseCase {
   constructor(
     @Inject(TOKA_AUTH_PORT)
     private readonly tokaAuth: TokaAuthPort,
-    @Inject(TOKA_USER_INFO_PORT)
-    private readonly tokaUserInfo: TokaUserInfoPort,
+    private readonly userRepo: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -50,13 +49,20 @@ export class LoginWithTokaUseCase {
       );
     }
 
-    // 2. Obtener info del usuario de Toka
-    let userInfo: TokaUserInfo;
+    // 2. Crear o actualizar usuario local
+    let dbUser: import('../../../users/infrastructure/persistence/schemas/user.schema.js').UserDocument;
     try {
-      userInfo = await this.tokaUserInfo.getUserInfo(tokaResult.accessToken);
+      dbUser = await this.userRepo.upsertByTokaUserId(tokaResult.userId, {
+        tokaAccessToken: tokaResult.accessToken,
+      });
     } catch {
-      this.logger.warn('Fallo al obtener perfil de Toka');
-      userInfo = { userId: tokaResult.userId };
+      this.logger.error(
+        `Error al hacer upsert del usuario de Toka: ${tokaResult.userId}`,
+      );
+      throw new AppException(
+        ErrorCodes.INTERNAL_ERROR,
+        'Error interno al procesar el usuario.',
+      );
     }
 
     // 3. Generar JWT interno (nunca devolver token de Toka al cliente)
@@ -70,14 +76,14 @@ export class LoginWithTokaUseCase {
 
     const accessToken = this.jwtService.sign(jwtPayload, {
       secret: this.configService.get<string>('auth.jwtSecret'),
-      expiresIn,
+      expiresIn: Number(expiresIn),
     });
 
     const refreshToken = this.jwtService.sign(
       { sub: tokaResult.userId, type: 'refresh' as const },
       {
         secret: this.configService.get<string>('auth.jwtRefreshSecret'),
-        expiresIn: refreshExpiresIn,
+        expiresIn: Number(refreshExpiresIn),
       },
     );
 
@@ -88,8 +94,8 @@ export class LoginWithTokaUseCase {
       refreshToken,
       user: {
         tokaUserId: tokaResult.userId,
-        nickname: userInfo.nickname,
-        avatar: userInfo.avatar,
+        nickname: dbUser.username,
+        avatar: dbUser.avatarUrl,
       },
     };
   }
