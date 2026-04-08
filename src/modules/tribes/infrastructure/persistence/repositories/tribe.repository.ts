@@ -24,8 +24,9 @@ export class TribeRepository {
     return tribe;
   }
 
-  async findPublicTribes(): Promise<TribeDocument[]> {
-    return this.tribeModel.find({ isPublic: true, status: 'active' }).sort({ seasonPoints: -1 }).limit(50).exec();
+  async getTopTribes(): Promise<TribeDocument[]> {
+    const tribes = await this.tribeModel.find({ isPublic: true, status: 'active' }).sort({ seasonPoints: -1 }).limit(50).lean().exec();
+    return tribes as unknown as TribeDocument[];
   }
 
   async createTribe(
