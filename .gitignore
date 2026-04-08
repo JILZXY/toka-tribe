@@ -54,3 +54,10 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# PDF files
+*.pdf
+
+# Markdown documents
+import { Prop, Schema, SchemaFactory } from '@nest.md
+si dame tambien los endpoints y comados de nestjs.md
