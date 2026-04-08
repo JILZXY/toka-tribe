@@ -2,11 +2,14 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 import {
   appConfig,
   dbConfig,
   authConfig,
   tokaConfig,
+  redisConfig,
   envValidationSchema,
 } from './config/env/index.js';
 import { HealthModule } from './modules/health/health.module.js';
@@ -28,12 +31,28 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
     // ── Configuración con validación estricta ──
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, dbConfig, authConfig, tokaConfig],
+      load: [appConfig, dbConfig, authConfig, tokaConfig, redisConfig],
       validationSchema: envValidationSchema,
       validationOptions: {
         abortEarly: true,
         allowUnknown: true,
       },
+    }),
+
+    // ── Redis Cache Global (OWASP A04 - Performance + Security) ──
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        store: await redisStore({
+          socket: {
+            host: config.get<string>('redis.host'),
+            port: config.get<number>('redis.port'),
+          },
+          ttl: config.get<number>('redis.ttl') * 1000, // cache-manager-redis-yet espera ms
+        }),
+      }),
     }),
 
     // ── MongoDB ──

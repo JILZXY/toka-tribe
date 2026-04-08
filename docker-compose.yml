@@ -17,6 +17,23 @@ services:
       retries: 5
       start_period: 10s
 
+  # ── Redis Cache ──
+  redis:
+    image: redis:7-alpine
+    container_name: toka_tribe_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
   # ── API NestJS ──
   api:
     build:
@@ -28,6 +45,8 @@ services:
       - "${PORT:-3000}:3000"
     depends_on:
       mongo:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -42,6 +61,10 @@ services:
       ALIPAY_MERCHANT_CODE: ${ALIPAY_MERCHANT_CODE:-30100}
       THROTTLE_TTL: ${THROTTLE_TTL:-60000}
       THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-30}
+      LEADERBOARD_CACHE_TTL_SECONDS: ${LEADERBOARD_CACHE_TTL_SECONDS:-20}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/v1/health"]
       interval: 30s
@@ -51,4 +74,6 @@ services:
 
 volumes:
   mongo_data:
+    driver: local
+  redis_data:
     driver: local
