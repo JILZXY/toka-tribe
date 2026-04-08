@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -11,10 +11,12 @@ import { TokaAuthHttpAdapter } from './infrastructure/adapters/toka-auth-http.ad
 import { TokaUserInfoHttpAdapter } from './infrastructure/adapters/toka-user-info-http.adapter.js';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy.js';
 import { JwtAuthGuard } from './infrastructure/guards/jwt-auth.guard.js';
+import { UsersModule } from '../users/users.module.js';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
+    forwardRef(() => UsersModule),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

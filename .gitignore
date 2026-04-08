@@ -55,6 +55,11 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# Swagger generation files
+generate-swagger.ts
+generate-swagger.js
+swagger-output.json
+
 # PDF files
 *.pdf
 
