@@ -20,8 +20,8 @@ async function bootstrap() {
 
   // ── CORS (configurar según dominios permitidos en producción) ──
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production'
-      ? (process.env.ALLOWED_ORIGINS as string).split(',')
+    origin: process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGINS !== '*'
+      ? process.env.ALLOWED_ORIGINS.split(',')
       : true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Trace-Id'],
