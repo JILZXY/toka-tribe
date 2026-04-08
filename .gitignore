@@ -67,3 +67,4 @@ swagger-output.json
 import { Prop, Schema, SchemaFactory } from '@nest.md
 si dame tambien los endpoints y comados de nestjs.md
 Guía para Desarrolladores_Documentación orientada.md
+Prompt_ Integración de Autenticación Toka en Bac.md

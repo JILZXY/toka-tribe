@@ -16,7 +16,11 @@ async function bootstrap() {
   app.setGlobalPrefix(AppConstants.API_PREFIX);
 
   // ── Seguridad HTTP (OWASP A05) ──
-  app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Esto permite que Swagger cargue sus estilos y scripts
+  }),
+);
 
   // ── CORS (configurar según dominios permitidos en producción) ──
   app.enableCors({
