@@ -5,6 +5,9 @@ import { PaymentsController } from './presentation/controllers/payments.controll
 import { AuthModule } from '../auth/auth.module.js';
 import { UsersModule } from '../users/users.module.js';
 
+import { TokaPaymentHttpAdapter } from './infrastructure/adapters/toka-payment-http.adapter.js';
+import { TOKA_PAYMENT_PORT } from './application/ports/toka-payment.port.js';
+
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: PaymentDocument.name, schema: PaymentSchema }]),
@@ -12,5 +15,11 @@ import { UsersModule } from '../users/users.module.js';
     UsersModule,
   ],
   controllers: [PaymentsController],
+  providers: [
+    {
+      provide: TOKA_PAYMENT_PORT,
+      useClass: TokaPaymentHttpAdapter,
+    },
+  ],
 })
 export class PaymentsModule {}
