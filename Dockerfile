@@ -1,26 +1,40 @@
-# Etapa 1: Construcción (Build)
+# ── Etapa 1: Build ──
 FROM node:20-alpine AS builder
 
 WORKDIR /usr/src/app
 
-# Copiar archivos de dependencias
+# Instalar dependencias primero (cache de capas)
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Copiar el resto del código y compilar
-COPY . .
+# Copiar código fuente y compilar
+COPY tsconfig*.json nest-cli.json ./
+COPY src ./src
 RUN npm run build
 
-# Etapa 2: Producción (Runtime)
-FROM node:20-alpine
+# ── Etapa 2: Producción ──
+FROM node:20-alpine AS production
+
+# Seguridad: usuario no-root (OWASP A05)
+RUN addgroup -g 1001 -S nestjs && \
+    adduser -S nestjs -u 1001
 
 WORKDIR /usr/src/app
 
+# Solo dependencias de producción
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm ci --omit=dev && npm cache clean --force
 
+# Copiar artefactos compilados
 COPY --from=builder /usr/src/app/dist ./dist
+
+# No ejecutar como root
+USER nestjs
 
 EXPOSE 3000
 
-CMD ["node", "dist/main"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:3000/api/v1/health || exit 1
+
+CMD ["node", "dist/main.js"]
