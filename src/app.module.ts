@@ -50,7 +50,7 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
             host: config.get<string>('redis.host'),
             port: config.get<number>('redis.port'),
           },
-          ttl: config.get<number>('redis.ttl') * 1000, // cache-manager-redis-yet espera ms
+          ttl: (config.get<number>('redis.ttl') || 30) * 1000, // cache-manager-redis-yet espera ms
         }),
       }),
     }),

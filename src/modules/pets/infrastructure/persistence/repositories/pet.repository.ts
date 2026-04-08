@@ -35,7 +35,7 @@ export class PetRepository {
     return this.petModel.create({ userId, name });
   }
 
-  async getAllAvailablePetItems(): Promise<PetItemDocument[]> {
+  async findAvailableItems(): Promise<PetItemDocument[]> {
     const items = await this.petItemModel.find({ isAvailable: true }).sort({ pointCost: 1 }).lean().exec();
     return items as unknown as PetItemDocument[];
   }
