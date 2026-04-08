@@ -12,6 +12,15 @@ import {
 import { HealthModule } from './modules/health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { PetsModule } from './modules/pets/pets.module.js';
+import { SeasonsModule } from './modules/seasons/seasons.module.js';
+import { TribesModule } from './modules/tribes/tribes.module.js';
+import { GamesModule } from './modules/games/games.module.js';
+import { ChallengesModule } from './modules/challenges/challenges.module.js';
+import { ScoringModule } from './modules/scoring/scoring.module.js';
+import { LeaderboardModule } from './modules/leaderboard/leaderboard.module.js';
+import { RewardsModule } from './modules/rewards/rewards.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
 import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.middleware.js';
 
 @Module({
@@ -54,6 +63,15 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
     HealthModule,
     AuthModule,
     UsersModule,
+    PetsModule,
+    SeasonsModule,
+    TribesModule,
+    GamesModule,
+    ChallengesModule,
+    ScoringModule,
+    LeaderboardModule,
+    RewardsModule,
+    PaymentsModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -55,6 +55,7 @@ export const ErrorCodes = {
   // ── Payments ──
   PAYMENT_FAILED: 'PAYMENT_FAILED',
   PAYMENT_NOT_FOUND: 'PAYMENT_NOT_FOUND',
+  PAYMENT_DUPLICATE: 'PAYMENT_DUPLICATE',
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
