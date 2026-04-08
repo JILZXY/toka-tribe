@@ -16,7 +16,8 @@ import { Request } from 'express';
 export class ResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<Request>();
-    const traceId = (request as any).traceId || 'unknown';
+    const reqTraceId = (request as any).traceId;
+    const traceId = reqTraceId ? reqTraceId : 'unknown';
 
     return next.handle().pipe(
       map((data) => ({

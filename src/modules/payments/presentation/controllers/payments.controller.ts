@@ -51,7 +51,7 @@ export class PaymentsController {
       dbUser.tokaUserId,
       body.description,
       body.amount,
-      body.currency || 'MXN',
+      body.currency,
       dbUser.tokaAccessToken,
     );
 
@@ -60,7 +60,7 @@ export class PaymentsController {
         userId: dbUser._id,
         externalPaymentId: tokaOrder.paymentId,
         amount: body.amount,
-        currency: body.currency || 'MXN',
+        currency: body.currency,
         description: body.description,
         metadata: body.metadata,
       });

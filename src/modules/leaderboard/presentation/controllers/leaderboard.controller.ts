@@ -24,7 +24,7 @@ export class LeaderboardController {
   @ApiOperation({ summary: 'Leaderboard por división (Cacheado, CQRS)' })
   @ApiParam({ name: 'division', description: 'División (ej. BRONCE, ORO)', type: String })
   @UseInterceptors(CacheInterceptor)
-  @CacheTTL(parseInt(process.env.LEADERBOARD_CACHE_TTL_SECONDS || '20', 10) * 1000)
+  @CacheTTL(parseInt(process.env.LEADERBOARD_CACHE_TTL_SECONDS as string, 10) * 1000)
   async byDivision(@Param('division') division: string) {
     const season = await this.seasonRepo.findActiveOrThrow();
     // Usa el handler aislado vía CQRS
@@ -34,7 +34,7 @@ export class LeaderboardController {
   @Get('current')
   @ApiOperation({ summary: 'Leaderboard actual completo (Cacheado)' })
   @UseInterceptors(CacheInterceptor)
-  @CacheTTL(parseInt(process.env.LEADERBOARD_CACHE_TTL_SECONDS || '20', 10) * 1000)
+  @CacheTTL(parseInt(process.env.LEADERBOARD_CACHE_TTL_SECONDS as string, 10) * 1000)
   async current() {
     const season = await this.seasonRepo.findActiveOrThrow();
     return this.snapshotModel.find({ seasonId: season._id }).sort({ division: 1, rank: 1 }).lean().exec();

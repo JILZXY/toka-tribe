@@ -71,8 +71,8 @@ export class LoginWithTokaUseCase {
       type: 'access' as const,
     };
 
-    const expiresIn = this.configService.get<number>('auth.jwtExpiresIn') ?? 3600;
-    const refreshExpiresIn = this.configService.get<number>('auth.jwtRefreshExpiresIn') ?? 604800;
+    const expiresIn = this.configService.get<number>('auth.jwtExpiresIn') as number;
+    const refreshExpiresIn = this.configService.get<number>('auth.jwtRefreshExpiresIn') as number;
 
     const accessToken = this.jwtService.sign(jwtPayload, {
       secret: this.configService.get<string>('auth.jwtSecret'),

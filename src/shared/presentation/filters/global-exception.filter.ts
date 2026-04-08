@@ -23,7 +23,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const traceId = (request as any).traceId || 'unknown';
+    const reqTraceId = (request as any).traceId;
+    const traceId = reqTraceId ? reqTraceId : 'unknown';
 
     let httpStatus: number;
     let code: string;

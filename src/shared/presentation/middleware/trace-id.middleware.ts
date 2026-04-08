@@ -11,7 +11,7 @@ import { randomUUID } from 'crypto';
 export class TraceIdMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction): void {
     (req as any).traceId =
-      (req.headers['x-trace-id'] as string) || `req-${randomUUID().substring(0, 8)}`;
+      (req.headers['x-trace-id'] as string) ? (req.headers['x-trace-id'] as string) : `req-${randomUUID().substring(0, 8)}`;
     next();
   }
 }

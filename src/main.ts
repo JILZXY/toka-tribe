@@ -21,7 +21,7 @@ async function bootstrap() {
   // ── CORS (configurar según dominios permitidos en producción) ──
   app.enableCors({
     origin: process.env.NODE_ENV === 'production'
-      ? (process.env.ALLOWED_ORIGINS || '').split(',')
+      ? (process.env.ALLOWED_ORIGINS as string).split(',')
       : true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Trace-Id'],
@@ -53,7 +53,7 @@ async function bootstrap() {
     Logger.log('📄 Swagger disponible en /docs', 'Bootstrap');
   }
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT as string;
   await app.listen(port);
   Logger.log(`🚀 Toka Tribe API escuchando en puerto ${port}`, 'Bootstrap');
   Logger.log(`📍 Prefijo: /${AppConstants.API_PREFIX}`, 'Bootstrap');
