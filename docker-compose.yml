@@ -37,8 +37,9 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-3600}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super-refresh-secret-change-in-prod-32}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-604800}
-      TOKA_BASE_URL: ${TOKA_BASE_URL:-https://api.toka.com}
+      TOKA_BASE_URL: ${TOKA_BASE_URL:-https://talentland-toka.eastus2.cloudapp.azure.com}
       TOKA_APP_ID: ${TOKA_APP_ID:-your-toka-app-id}
+      ALIPAY_MERCHANT_CODE: ${ALIPAY_MERCHANT_CODE:-30100}
       THROTTLE_TTL: ${THROTTLE_TTL:-60000}
       THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
     healthcheck:
