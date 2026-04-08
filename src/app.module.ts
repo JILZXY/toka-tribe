@@ -11,6 +11,7 @@ import {
 } from './config/env/index.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { UsersModule } from './modules/users/users.module.js';
 import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.middleware.js';
 
 @Module({
@@ -52,6 +53,7 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
     // ── Módulos de la aplicación ──
     HealthModule,
     AuthModule,
+    UsersModule,
   ],
 })
 export class AppModule implements NestModule {
