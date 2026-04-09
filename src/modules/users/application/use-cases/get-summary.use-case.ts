@@ -57,6 +57,8 @@ export class GetUserSummaryUseCase {
         name: season.name,
         status: season.status,
         endsAt: season.endDate,
+        targetPoints: (season as any).targetPoints ?? 50000,
+        currentPoints: user.totalPoints,
       },
     };
   }

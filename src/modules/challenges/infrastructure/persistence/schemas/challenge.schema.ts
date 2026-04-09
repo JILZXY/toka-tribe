@@ -10,8 +10,11 @@ export class ChallengeDocument extends Document {
   @Prop({ type: Types.ObjectId, ref: 'GameDocument', required: true })
   gameId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   title: string;
+
+  @Prop({ type: String })
+  description: string;
 
   @Prop({ default: ChallengeStatus.UPCOMING, enum: Object.values(ChallengeStatus) })
   status: string;

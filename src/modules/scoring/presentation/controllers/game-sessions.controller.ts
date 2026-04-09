@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard
 import { CurrentUser } from '../../../../shared/presentation/decorators/current-user.decorator.js';
 import { GameSessionDocument } from '../../infrastructure/persistence/schemas/game-session.schema.js';
 import { CreateGameSessionDto } from '../../application/dto/create-game-session.dto.js';
+import { ChallengeDocument } from '../../../challenges/infrastructure/persistence/schemas/challenge.schema.js';
+import { GameDocument } from '../../../games/infrastructure/persistence/schemas/game.schema.js';
 import { UserRepository } from '../../../users/infrastructure/persistence/repositories/user.repository.js';
 import { TribeRepository } from '../../../tribes/infrastructure/persistence/repositories/tribe.repository.js';
 import { SeasonRepository } from '../../../seasons/infrastructure/persistence/repositories/season.repository.js';
@@ -19,6 +21,8 @@ import { ErrorCodes } from '../../../../config/constants/error-codes.js';
 export class GameSessionsController {
   constructor(
     @InjectModel(GameSessionDocument.name) private readonly sessionModel: Model<GameSessionDocument>,
+    @InjectModel(ChallengeDocument.name) private readonly challengeModel: Model<ChallengeDocument>,
+    @InjectModel(GameDocument.name) private readonly gameModel: Model<GameDocument>,
     private readonly userRepo: UserRepository,
     private readonly tribeRepo: TribeRepository,
     private readonly seasonRepo: SeasonRepository,
@@ -28,6 +32,7 @@ export class GameSessionsController {
   @ApiOperation({ summary: 'Registrar sesión de juego' })
   @ApiResponse({ status: 201, description: 'Sesión registrada.' })
   @ApiBody({ type: CreateGameSessionDto })
+  @ApiResponse({ status: 404, description: 'Reto no encontrado.' })
   @ApiResponse({ status: 409, description: 'Ya jugaste este reto.' })
   async register(
     @CurrentUser() user: { userId: string },
@@ -35,6 +40,17 @@ export class GameSessionsController {
   ) {
     const dbUser = await this.userRepo.findByTokaUserIdOrThrow(user.userId);
     const season = await this.seasonRepo.findActiveOrThrow();
+
+    // Validar que el reto exista y esté activo
+    const challenge = await this.challengeModel.findById(dto.challengeId).exec();
+    if (!challenge) {
+      throw AppException.notFound(ErrorCodes.CHALLENGE_NOT_FOUND, 'El reto no existe.');
+    }
+
+    // Obtener el tipo de juego para poblar gameType
+    const game = await this.gameModel.findById(challenge.gameId).lean().exec();
+    const gameType = game?.type ?? 'unknown';
+
     const member = await this.tribeRepo.findMemberByUserAndSeason(
       dbUser._id as Types.ObjectId,
       season._id as Types.ObjectId,
@@ -44,8 +60,8 @@ export class GameSessionsController {
       throw new AppException(ErrorCodes.TRIBE_NOT_A_MEMBER, 'Debes pertenecer a una tribu para jugar.');
     }
 
-    // Calcular puntos (simplificado — en producción esto sería un domain service)
-    const pointsEarned = Math.min(dto.score, 1000);
+    // Respetar el límite de puntos definido en el reto (no hardcodeado)
+    const pointsEarned = Math.min(dto.score, challenge.maxPointsPerUser);
 
     try {
       const session = await this.sessionModel.create({
@@ -54,6 +70,7 @@ export class GameSessionsController {
         tribeId: member.tribeId,
         score: dto.score,
         pointsEarned,
+        gameType,
         durationMs: dto.durationMs,
         metadata: dto.metadata,
       });
@@ -71,6 +88,7 @@ export class GameSessionsController {
         sessionId: session._id,
         score: dto.score,
         pointsEarned,
+        gameType,
         totalPoints: dbUser.totalPoints,
         currentStreak: dbUser.currentStreak,
       };

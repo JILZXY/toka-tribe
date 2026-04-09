@@ -7,8 +7,11 @@ export class SeasonDocument extends Document {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ default: SeasonStatus.ACTIVE, enum: Object.values(SeasonStatus) })
+  @Prop({ type: String, default: SeasonStatus.ACTIVE, enum: Object.values(SeasonStatus) })
   status: string;
+
+  @Prop({ type: Number, default: 50000 })
+  targetPoints: number;
 
   @Prop({ required: true })
   startDate: Date;

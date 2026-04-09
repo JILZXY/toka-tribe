@@ -24,9 +24,17 @@ export class RewardsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar recompensas' })
-  async list() {
-    return this.rewardModel.find().sort({ requiredPoints: 1 }).exec();
+  @ApiOperation({ summary: 'Listar recompensas con estado de elegibilidad para el usuario' })
+  async list(@CurrentUser() user: { userId: string }) {
+    const dbUser = await this.userRepo.findByTokaUserIdOrThrow(user.userId);
+    const rewards = await this.rewardModel.find().sort({ requiredPoints: 1 }).lean().exec();
+
+    return rewards.map((reward) => ({
+      ...reward,
+      isClaimable:
+        dbUser.totalPoints >= reward.requiredPoints &&
+        !(reward.isPremiumOnly && dbUser.leagueMembership === 'FREE'),
+    }));
   }
 
   @Get('my-claims')

@@ -22,13 +22,14 @@ export class LeaderboardController {
 
   @Get('divisions/:division')
   @ApiOperation({ summary: 'Leaderboard por división (Cacheado, CQRS)' })
-  @ApiParam({ name: 'division', description: 'División (ej. BRONCE, ORO)', type: String })
+  @ApiParam({ name: 'division', description: 'División (ej. BRONCE, ORO, PLATA) — insensible a mayúsculas', type: String })
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(parseInt(process.env.LEADERBOARD_CACHE_TTL_SECONDS as string, 10) * 1000)
   async byDivision(@Param('division') division: string) {
     const season = await this.seasonRepo.findActiveOrThrow();
-    // Usa el handler aislado vía CQRS
-    return this.queryBus.execute(new GetTopLeaderboardQuery(division, season._id.toString(), 50));
+    // Normalizar a mayúsculas para que "bronce", "BRONCE" y "Bronce" sean equivalentes
+    const normalizedDivision = division.toUpperCase();
+    return this.queryBus.execute(new GetTopLeaderboardQuery(normalizedDivision, season._id.toString(), 50));
   }
 
   @Get('current')

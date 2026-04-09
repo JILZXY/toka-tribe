@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 import { redisStore } from 'cache-manager-redis-yet';
 import {
   appConfig,
@@ -25,6 +26,8 @@ import { LeaderboardModule } from './modules/leaderboard/leaderboard.module.js';
 import { RewardsModule } from './modules/rewards/rewards.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.middleware.js';
+import { UserDocument, UserSchema } from './modules/users/infrastructure/persistence/schemas/user.schema.js';
+import { StreakResetTask } from './tasks/streak-reset.task.js';
 
 @Module({
   imports: [
@@ -85,6 +88,10 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
       }),
     }),
 
+    // ── Tareas programadas ──
+    ScheduleModule.forRoot(),
+    MongooseModule.forFeature([{ name: UserDocument.name, schema: UserSchema }]),
+
     // ── Módulos de la aplicación ──
     HealthModule,
     AuthModule,
@@ -99,6 +106,7 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
     RewardsModule,
     PaymentsModule,
   ],
+  providers: [StreakResetTask],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

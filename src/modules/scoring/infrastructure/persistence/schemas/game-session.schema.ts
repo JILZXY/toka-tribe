@@ -18,6 +18,9 @@ export class GameSessionDocument extends Document {
   @Prop({ type: Number, required: true, validate: { validator: Number.isInteger, message: 'pointsEarned debe ser entero' } })
   pointsEarned: number;
 
+  @Prop({ type: String })
+  gameType: string;
+
   @Prop()
   durationMs: number;
 
