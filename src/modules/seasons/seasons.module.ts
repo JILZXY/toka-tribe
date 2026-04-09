@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SeasonDocument, SeasonSchema } from './infrastructure/persistence/schemas/season.schema.js';
 import { SeasonRepository } from './infrastructure/persistence/repositories/season.repository.js';
@@ -8,7 +8,7 @@ import { AuthModule } from '../auth/auth.module.js';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: SeasonDocument.name, schema: SeasonSchema }]),
-    AuthModule,
+    forwardRef(() => AuthModule),
   ],
   controllers: [SeasonsController, AdminSeasonsController],
   providers: [SeasonRepository],

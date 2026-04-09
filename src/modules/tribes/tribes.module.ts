@@ -14,7 +14,7 @@ import { SeasonsModule } from '../seasons/seasons.module.js';
       { name: TribeDocument.name, schema: TribeSchema },
       { name: TribeMemberDocument.name, schema: TribeMemberSchema },
     ]),
-    AuthModule,
+    forwardRef(() => AuthModule),
     forwardRef(() => UsersModule),
     SeasonsModule,
   ],
