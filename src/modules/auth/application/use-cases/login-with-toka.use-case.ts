@@ -2,6 +2,7 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TOKA_AUTH_PORT, type TokaAuthPort } from '../ports/toka-auth.port.js';
+import { TOKA_USER_INFO_PORT, type TokaUserInfoPort } from '../ports/toka-user-info.port.js';
 import { UserRepository } from '../../../users/infrastructure/persistence/repositories/user.repository.js';
 import { AppException } from '../../../../shared/application/exceptions/app-exception.js';
 import { ErrorCodes } from '../../../../config/constants/error-codes.js';
@@ -29,6 +30,8 @@ export class LoginWithTokaUseCase {
   constructor(
     @Inject(TOKA_AUTH_PORT)
     private readonly tokaAuth: TokaAuthPort,
+    @Inject(TOKA_USER_INFO_PORT)
+    private readonly tokaUserInfo: TokaUserInfoPort,
     private readonly userRepo: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -49,11 +52,28 @@ export class LoginWithTokaUseCase {
       );
     }
 
+    // 1.5 Obtener toda la información del usuario disponible en Toka
+    // authCode se envía en un array porque Toka lo requiere así internamente para user/info a veces,
+    // o al menos así lo define el puerto en getUserInfo(accessToken, authCodes)
+    const userInfo = await this.tokaUserInfo.getUserInfo(tokaResult.accessToken, [authCode]);
+
     // 2. Crear o actualizar usuario local
     let dbUser: import('../../../users/infrastructure/persistence/schemas/user.schema.js').UserDocument;
     try {
       dbUser = await this.userRepo.upsertByTokaUserId(tokaResult.userId, {
         tokaAccessToken: tokaResult.accessToken,
+        username: userInfo.nickName,
+        avatarUrl: userInfo.avatar,
+        fullName: userInfo.fullName,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        gender: userInfo.gender,
+        email: userInfo.email,
+        mobilePhone: userInfo.mobilePhone,
+        birthday: userInfo.birthday,
+        nationality: userInfo.nationality,
+        birthState: userInfo.birthState,
+        kycState: userInfo.kycState,
       });
     } catch {
       this.logger.error(

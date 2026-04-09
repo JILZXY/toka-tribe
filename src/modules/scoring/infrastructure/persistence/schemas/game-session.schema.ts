@@ -27,13 +27,16 @@ export class GameSessionDocument extends Document {
   @Prop({ type: Object })
   metadata: Record<string, unknown>;
 
+  @Prop({ type: Boolean, default: false })
+  isChallengeBonusAwarded: boolean;
+
   @Prop({ default: Date.now })
   playedAt: Date;
 }
 
 export const GameSessionSchema = SchemaFactory.createForClass(GameSessionDocument);
-// Idempotencia: un usuario solo puede completar un reto una vez
-GameSessionSchema.index({ challengeId: 1, userId: 1 }, { unique: true });
+// Consulta rápida para validar si un usuario ya jugó un reto y obtuvo su bono
+GameSessionSchema.index({ challengeId: 1, userId: 1, isChallengeBonusAwarded: 1 });
 // Consulta de ranking interno de tribu por reto
 GameSessionSchema.index({ tribeId: 1, challengeId: 1, pointsEarned: -1 });
 // Historial de juegos del usuario paginado

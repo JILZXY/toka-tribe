@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -19,6 +19,8 @@ import { ErrorCodes } from '../../../../config/constants/error-codes.js';
 @UseGuards(JwtAuthGuard)
 @Controller('game-sessions')
 export class GameSessionsController {
+  private readonly logger = new Logger(GameSessionsController.name);
+
   constructor(
     @InjectModel(GameSessionDocument.name) private readonly sessionModel: Model<GameSessionDocument>,
     @InjectModel(ChallengeDocument.name) private readonly challengeModel: Model<ChallengeDocument>,
@@ -60,8 +62,29 @@ export class GameSessionsController {
       throw new AppException(ErrorCodes.TRIBE_NOT_A_MEMBER, 'Debes pertenecer a una tribu para jugar.');
     }
 
-    // Respetar el límite de puntos definido en el reto (no hardcodeado)
-    const pointsEarned = Math.min(dto.score, challenge.maxPointsPerUser);
+    // Verificar si el usuario ya jugó y ganó el bono de este reto
+    const previousBonusSession = await this.sessionModel.findOne({
+      challengeId: new Types.ObjectId(dto.challengeId),
+      userId: dbUser._id,
+      isChallengeBonusAwarded: true,
+    }).exec();
+
+    // Lógica dinámica de puntos:
+    // - Si NO ha ganado el bono: Gana su score (base) + el bono del reto (maxPointsPerUser). Ambos en un solo pago por límite.
+    //   Para conservar equilibrio, si el score no llega máximo pero hay reto, se podría sumar ambos. Asumiremos 
+    //   que pointsEarned = Math.min(dto.score, 1000) (puntos normales del juego) + (BONUS si aplica).
+    //   En la redacción asumamos: pointsEarned = min(dto.score, MAX_POR_JUEGO) + (esPrimeraVez ? bonoReto : 0).
+    const BASE_MAX_SCORE_PER_PLAY = 1000;
+    const baseScore = Math.min(dto.score, BASE_MAX_SCORE_PER_PLAY);
+    
+    let pointsEarned = baseScore;
+    let isChallengeBonusAwarded = false;
+
+    if (!previousBonusSession) {
+      // Primera vez cobrando el reto, gana bono extra.
+      pointsEarned += challenge.maxPointsPerUser;
+      isChallengeBonusAwarded = true;
+    }
 
     try {
       const session = await this.sessionModel.create({
@@ -71,6 +94,7 @@ export class GameSessionsController {
         score: dto.score,
         pointsEarned,
         gameType,
+        isChallengeBonusAwarded,
         durationMs: dto.durationMs,
         metadata: dto.metadata,
       });
@@ -93,9 +117,7 @@ export class GameSessionsController {
         currentStreak: dbUser.currentStreak,
       };
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'code' in error && (error as { code: number }).code === 11000) {
-        throw AppException.conflict(ErrorCodes.CHALLENGE_ALREADY_PLAYED, 'Ya has jugado este reto.');
-      }
+      this.logger?.error('Error registrando sesión de juego', error);
       throw error;
     }
   }

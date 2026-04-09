@@ -44,20 +44,33 @@ export class UserRepository {
    */
   async upsertByTokaUserId(
     tokaUserId: string,
-    data: Partial<Pick<UserDocument, 'username' | 'avatarUrl' | 'tokaAccessToken'>>,
+    data: Partial<Pick<UserDocument, 'username' | 'avatarUrl' | 'tokaAccessToken' | 'fullName' | 'firstName' | 'lastName' | 'gender' | 'email' | 'mobilePhone' | 'birthday' | 'nationality' | 'birthState' | 'kycState'>>,
   ): Promise<UserDocument> {
     const user = await this.userModel
       .findOneAndUpdate(
         { tokaUserId },
         {
-          $setOnInsert: { tokaUserId },
+          // En inserción: poner tokaUserId y username provisional (el tokaUserId mismo)
+          // Si el perfil ya fue sincronizado, $setOnInsert no sobreescribe valores existentes
+          $setOnInsert: { tokaUserId, username: tokaUserId },
           $set: {
             ...(data.username && { username: data.username }),
             ...(data.avatarUrl && { avatarUrl: data.avatarUrl }),
             ...(data.tokaAccessToken && { tokaAccessToken: data.tokaAccessToken }),
+            ...(data.fullName !== undefined && { fullName: data.fullName }),
+            ...(data.firstName !== undefined && { firstName: data.firstName }),
+            ...(data.lastName !== undefined && { lastName: data.lastName }),
+            ...(data.gender !== undefined && { gender: data.gender }),
+            ...(data.email !== undefined && { email: data.email }),
+            ...(data.mobilePhone !== undefined && { mobilePhone: data.mobilePhone }),
+            ...(data.birthday !== undefined && { birthday: data.birthday }),
+            ...(data.nationality !== undefined && { nationality: data.nationality }),
+            ...(data.birthState !== undefined && { birthState: data.birthState }),
+            ...(data.kycState !== undefined && { kycState: data.kycState }),
           },
         },
-        { upsert: true, returnDocument: 'after', runValidators: true },
+        // runValidators: false para que no falle en upserts donde username aún no viene del perfil
+        { upsert: true, returnDocument: 'after' },
       )
       .exec();
     return user!;

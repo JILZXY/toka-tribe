@@ -14,6 +14,36 @@ export class UserDocument extends Document {
   @Prop()
   avatarUrl: string;
 
+  @Prop()
+  fullName: string;
+
+  @Prop()
+  firstName: string;
+
+  @Prop()
+  lastName: string;
+
+  @Prop()
+  gender: string;
+
+  @Prop()
+  email: string;
+
+  @Prop()
+  mobilePhone: string;
+
+  @Prop({ type: Number })
+  birthday: number;
+
+  @Prop()
+  nationality: string;
+
+  @Prop()
+  birthState: string;
+
+  @Prop()
+  kycState: string;
+
   @Prop({
     type: Number,
     default: 0,
