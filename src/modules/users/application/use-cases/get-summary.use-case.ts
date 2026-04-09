@@ -21,7 +21,15 @@ export class GetUserSummaryUseCase {
       season._id as any,
     );
 
-    const tribe = member ? await this.tribeRepo.findByIdOrThrow((member.tribeId as Types.ObjectId).toString()) : null;
+    let tribeResult: null | {
+      id: any;
+      name: string;
+    } = null;
+
+    if (member) {
+      const tribe = await this.tribeRepo.findByIdOrThrow((member.tribeId as Types.ObjectId).toString());
+      tribeResult = { id: tribe._id, name: tribe.name };
+    }
 
     return {
       user: {
@@ -32,8 +40,8 @@ export class GetUserSummaryUseCase {
       },
       tribe: member
         ? {
-            id: tribe._id,
-            name: tribe.name,
+            id: tribeResult!.id,
+            name: tribeResult!.name,
             tier: member.activeTier,
             memberRole: member.role,
           }

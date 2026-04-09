@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TribeDocument, TribeSchema } from './infrastructure/persistence/schemas/tribe.schema.js';
 import { TribeMemberDocument, TribeMemberSchema } from './infrastructure/persistence/schemas/tribe-member.schema.js';
@@ -15,7 +15,7 @@ import { SeasonsModule } from '../seasons/seasons.module.js';
       { name: TribeMemberDocument.name, schema: TribeMemberSchema },
     ]),
     AuthModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     SeasonsModule,
   ],
   controllers: [TribesController],
