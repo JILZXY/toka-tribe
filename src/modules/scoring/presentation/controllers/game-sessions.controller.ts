@@ -1,10 +1,11 @@
 import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../../../shared/presentation/decorators/current-user.decorator.js';
 import { GameSessionDocument } from '../../infrastructure/persistence/schemas/game-session.schema.js';
+import { CreateGameSessionDto } from '../../application/dto/create-game-session.dto.js';
 import { UserRepository } from '../../../users/infrastructure/persistence/repositories/user.repository.js';
 import { TribeRepository } from '../../../tribes/infrastructure/persistence/repositories/tribe.repository.js';
 import { SeasonRepository } from '../../../seasons/infrastructure/persistence/repositories/season.repository.js';
@@ -26,10 +27,11 @@ export class GameSessionsController {
   @Post()
   @ApiOperation({ summary: 'Registrar sesión de juego' })
   @ApiResponse({ status: 201, description: 'Sesión registrada.' })
+  @ApiBody({ type: CreateGameSessionDto })
   @ApiResponse({ status: 409, description: 'Ya jugaste este reto.' })
   async register(
     @CurrentUser() user: { userId: string },
-    @Body() body: { challengeId: string; score: number; durationMs?: number; metadata?: Record<string, unknown> },
+    @Body() dto: CreateGameSessionDto,
   ) {
     const dbUser = await this.userRepo.findByTokaUserIdOrThrow(user.userId);
     const season = await this.seasonRepo.findActiveOrThrow();
@@ -43,17 +45,17 @@ export class GameSessionsController {
     }
 
     // Calcular puntos (simplificado — en producción esto sería un domain service)
-    const pointsEarned = Math.min(body.score, 1000);
+    const pointsEarned = Math.min(dto.score, 1000);
 
     try {
       const session = await this.sessionModel.create({
-        challengeId: new Types.ObjectId(body.challengeId),
+        challengeId: new Types.ObjectId(dto.challengeId),
         userId: dbUser._id,
         tribeId: member.tribeId,
-        score: body.score,
+        score: dto.score,
         pointsEarned,
-        durationMs: body.durationMs,
-        metadata: body.metadata,
+        durationMs: dto.durationMs,
+        metadata: dto.metadata,
       });
 
       // Actualizar puntos del usuario y contribución del miembro
@@ -67,7 +69,7 @@ export class GameSessionsController {
 
       return {
         sessionId: session._id,
-        score: body.score,
+        score: dto.score,
         pointsEarned,
         totalPoints: dbUser.totalPoints,
         currentStreak: dbUser.currentStreak,

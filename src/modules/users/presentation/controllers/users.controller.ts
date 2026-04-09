@@ -14,6 +14,7 @@ import {
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../../../shared/presentation/decorators/current-user.decorator.js';
 import { GetMeUseCase } from '../../application/use-cases/get-me.use-case.js';
+import { GetUserSummaryUseCase } from '../../application/use-cases/get-summary.use-case.js';
 import { UpdateProfileUseCase } from '../../application/use-cases/update-profile.use-case.js';
 import { UpdateProfileDto } from '../../application/dto/update-profile.dto.js';
 
@@ -24,6 +25,7 @@ import { UpdateProfileDto } from '../../application/dto/update-profile.dto.js';
 export class UsersController {
   constructor(
     private readonly getMe: GetMeUseCase,
+    private readonly getSummary: GetUserSummaryUseCase,
     private readonly updateProfile: UpdateProfileUseCase,
   ) {}
 
@@ -44,5 +46,12 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.updateProfile.execute(user.userId, dto);
+  }
+
+  @Get('me/summary')
+  @ApiOperation({ summary: 'Resumen consolidado del usuario para UI' })
+  @ApiResponse({ status: 200, description: 'Resumen del usuario.' })
+  async summary(@CurrentUser() user: { userId: string }) {
+    return this.getSummary.execute(user.userId);
   }
 }

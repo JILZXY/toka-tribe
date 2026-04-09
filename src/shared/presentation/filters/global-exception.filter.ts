@@ -69,15 +69,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       );
     }
 
-    const errorResponse = {
+    const errorResponse: Record<string, unknown> = {
       success: false,
-      error: {
-        code,
-        message,
-        ...(details && { details }),
-        traceId,
-      },
+      statusCode: httpStatus,
+      message,
+      errorCode: code,
+      traceId,
     };
+
+    if (details) {
+      (errorResponse as any).details = details;
+    }
 
     response.status(httpStatus).json(errorResponse);
   }

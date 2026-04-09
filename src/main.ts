@@ -36,7 +36,7 @@ app.use(
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,            // Remueve propiedades no declaradas en el DTO
-      forbidNonWhitelisted: true, // Rechaza propiedades no declaradas
+      forbidNonWhitelisted: false, // No rechaza propiedades extra: las ignora (compatibilidad frontend)
       transform: true,            // Transforma payloads a instancias de DTO
       transformOptions: {
         enableImplicitConversion: true,

@@ -36,8 +36,8 @@ export const envValidationSchema = Joi.object({
   THROTTLE_TTL: Joi.number().default(60000),
   THROTTLE_LIMIT: Joi.number().default(100),
 
-  // Redis Cache
-  REDIS_URL: Joi.string().required(),
+  // Redis Cache (opcional). Si no se proporciona, se usará cache en memoria del proceso.
+  REDIS_URL: Joi.string().optional().allow(''),
   CACHE_TTL_SECONDS: Joi.number().integer().min(1).default(30),
   LEADERBOARD_CACHE_TTL_SECONDS: Joi.number().integer().min(1).default(20),
 });

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 import { Request } from 'express';
+import { Response } from 'express';
 
 /**
  * Interceptor de respuesta estándar.
@@ -19,13 +20,15 @@ export class ResponseInterceptor implements NestInterceptor {
     const reqTraceId = (request as any).traceId;
     const traceId = reqTraceId ? reqTraceId : 'unknown';
 
+    const response = context.switchToHttp().getResponse<Response>();
+    const statusCode = response && (response as any).statusCode ? (response as any).statusCode : 200;
+
     return next.handle().pipe(
       map((data) => ({
         success: true,
+        statusCode,
         data: data ?? null,
-        meta: {
-          traceId,
-        },
+        traceId,
       })),
     );
   }

@@ -39,17 +39,27 @@ import { TraceIdMiddleware } from './shared/presentation/middleware/trace-id.mid
       },
     }),
 
-    // ── Redis Cache Global (OWASP A04 - Performance + Security) ──
+    // ── Cache Global: Redis si está disponible, si no usar cache en memoria del proceso
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        store: await redisStore({
-          url: config.get<string>('redis.url'),
-          ttl: (config.get<number>('redis.ttl') as number) * 1000, // cache-manager-redis-yet espera ms
-        }),
-      }),
+      useFactory: async (config: ConfigService) => {
+        const redisUrl = config.get<string>('redis.url');
+        const ttlMs = (config.get<number>('redis.ttl') as number) * 1000;
+
+        if (redisUrl) {
+          // Usar Redis Store (compartido entre procesos/instancias)
+          return {
+            store: await redisStore({ url: redisUrl, ttl: ttlMs }),
+          };
+        }
+
+        // Fallback: cache en memoria del proceso (no compartida entre instancias)
+        return {
+          ttl: ttlMs,
+        };
+      },
     }),
 
     // ── MongoDB ──

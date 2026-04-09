@@ -17,22 +17,7 @@ services:
       retries: 10
       start_period: 60s
 
-  # ── Redis Cache ──
-  redis:
-    image: redis:7-alpine
-    container_name: toka_tribe_redis
-    restart: unless-stopped
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    command: redis-server --save 60 1 --loglevel warning
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
+  # Redis removed — using in-memory cache by default or external managed Redis via REDIS_URL
 
   # ── API NestJS ──
   api:
@@ -44,12 +29,11 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
-      MONGODB_URI: mongodb://mongo:27017/toka_tribe
+      # Use MONGODB_URI from environment (allows external managed DB)
+      MONGODB_URI: ${MONGODB_URI}
       JWT_SECRET: ${JWT_SECRET:-super-secret-key-change-in-production-32chars}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-3600}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super-refresh-secret-change-in-prod-32}
@@ -59,9 +43,7 @@ services:
       ALIPAY_MERCHANT_CODE: ${ALIPAY_MERCHANT_CODE:-30100}
       THROTTLE_TTL: ${THROTTLE_TTL:-60000}
       THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
-      REDIS_URL: redis://redis:${REDIS_PORT:-6379}
-      REDIS_HOST: redis
-      REDIS_PORT: ${REDIS_PORT:-6379}
+      # REDIS_URL removed: service will fallback to in-memory cache unless REDIS_URL env is provided
       CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-30}
       LEADERBOARD_CACHE_TTL_SECONDS: ${LEADERBOARD_CACHE_TTL_SECONDS:-20}
     healthcheck:
@@ -73,6 +55,4 @@ services:
 
 volumes:
   mongo_data:
-    driver: local
-  redis_data:
     driver: local
