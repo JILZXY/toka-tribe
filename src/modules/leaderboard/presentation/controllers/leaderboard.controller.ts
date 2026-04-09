@@ -27,8 +27,8 @@ export class LeaderboardController {
   @CacheTTL(parseInt(process.env.LEADERBOARD_CACHE_TTL_SECONDS as string, 10) * 1000)
   async byDivision(@Param('division') division: string) {
     const season = await this.seasonRepo.findActiveOrThrow();
-    // Normalizar a mayúsculas para que "bronce", "BRONCE" y "Bronce" sean equivalentes
-    const normalizedDivision = division.toUpperCase();
+    // Normalizar para que coincida con el Enum (ej: "bronce" -> "Bronce", "BRONCE" -> "Bronce")
+    const normalizedDivision = division.charAt(0).toUpperCase() + division.slice(1).toLowerCase();
     return this.queryBus.execute(new GetTopLeaderboardQuery(normalizedDivision, season._id.toString(), 50));
   }
 
