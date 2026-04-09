@@ -58,7 +58,7 @@ export class GetMeUseCase {
       avatarUrl: user.avatarUrl,
       totalPoints: user.totalPoints,
       currentDivision: user.currentDivision,
-      currentStreak: user.currentStreak,
+      currentStreak: user.currentStreak ?? 0,
       lastPlayedDate: user.lastPlayedDate,
       leagueMembership: user.leagueMembership,
       tribe: tribeContext,
