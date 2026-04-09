@@ -53,7 +53,7 @@ export class PetRepository {
       .findByIdAndUpdate(
         pet._id,
         { $addToSet: { unlockedItems: itemObjectId } },
-        { new: true },
+        { returnDocument: 'after' },
       )
       .exec() as Promise<PetDocument>;
   }
@@ -67,7 +67,7 @@ export class PetRepository {
       .findByIdAndUpdate(
         pet._id,
         { $set: { [`equippedItems.${slot}`]: itemObjectId } },
-        { new: true },
+        { returnDocument: 'after' },
       )
       .exec() as Promise<PetDocument>;
   }

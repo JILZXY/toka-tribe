@@ -57,7 +57,7 @@ export class UserRepository {
             ...(data.tokaAccessToken && { tokaAccessToken: data.tokaAccessToken }),
           },
         },
-        { upsert: true, new: true, runValidators: true },
+        { upsert: true, returnDocument: 'after', runValidators: true },
       )
       .exec();
     return user!;
@@ -68,7 +68,7 @@ export class UserRepository {
     data: Partial<Pick<UserDocument, 'username' | 'avatarUrl'>>,
   ): Promise<UserDocument> {
     const user = await this.userModel
-      .findOneAndUpdate({ tokaUserId }, { $set: data }, { new: true, runValidators: true })
+      .findOneAndUpdate({ tokaUserId }, { $set: data }, { returnDocument: 'after', runValidators: true })
       .exec();
     if (!user) {
       throw AppException.notFound(
